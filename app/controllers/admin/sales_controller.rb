@@ -1,0 +1,40 @@
+class Admin::SalesController < ApplicationController
+  http_basic_authenticate_with name: ENV['ADMIN_NAME'], password: ENV['ADMIN_PASSWORD']
+
+  def index 
+    @sales = Sale.order(starts_on: :asc)
+    @active_sale = Sale.active.first
+  end
+
+  def new
+    @sale = Sale.new
+    @active_sale = Sale.active.first
+  end
+
+  def create
+    @sale = Sale.new(sale_params)
+
+    if @sale.save
+      redirect_to [:admin, :sales], notice: 'Created sale.'
+    else 
+      render :new
+    end
+  end
+
+  def destroy
+    @sale = Sale.find params[:id]
+    @sale.destroy
+    redirect_to [:admin, :sales], notice: 'Deleted sale.'
+  end
+  
+  private
+
+  def sale_params
+    params.require(:sale).permit(
+      :name,
+      :percent_off,
+      :starts_on,
+      :ends_on
+    )
+  end
+end
